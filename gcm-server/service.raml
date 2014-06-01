@@ -1,0 +1,103 @@
+#%RAML 0.8
+---
+title: GCM Demo API
+baseUri: http::/gcmdemo.cargocultism.com/api
+
+schemas:
+   - session: |
+      {
+      "type":"object",
+      "$schema": "http://json-schema.org/draft-03/schema",
+      "id": "http://jsonschema.net",
+      "required":true,
+      "properties": {
+             "gcm_registration_id": {
+                "type":"string",
+                "required":true 
+             },
+             "os_version": {
+                "type":"string",
+                "required":false
+             },
+             "app_version": {
+                "type":"string",
+                "required":true
+            }
+        }
+        }
+   - error: |
+      {
+         "type":"object",
+         "$schema":"http://json-schema.org/draft-03/schema",
+         "id":"http://jsonschema.net",
+         "required":false,
+         "properties": {
+            "error_message": {
+               "type":"string",
+               "required":false
+            },
+            "error_code":{
+               "type":"string",
+               "required":false
+            }
+         }
+      }
+
+/sessions:
+   /{sessionId}:
+      post:
+         description: Create a new session with the given sessionId
+         responses:
+            200:
+               body:
+                  application/json:
+                     schema: session
+                     example: |
+                        {
+                           "gcm_registration_id":"some id",
+                           "os_version":"4.4",
+                           "app_version:"1.0-SNAPSHOT"
+                        }
+            409:
+               body:
+                  application/json:
+                     schema: error
+                     example: |
+                        {
+                           "error_message":"session with {sessionId} already exists"
+                        }
+      get:
+         description: Retrieve a session by sessionId
+         responses:
+            200:
+               body:
+                  application/json:
+                     schema: session
+                     example: |
+                        {
+                           "gcm_registration_id": "some GCM id",
+                           "os_version": "4.3",
+                           "app_version": "1.0-SNAPSHOT"
+                        }
+
+            404:
+               body:
+                  application/json:
+                     schema: error
+      delete:
+        description: Delete a session with the given sessionId
+        responses:
+            200:
+            404:
+               body:
+                  application/json:
+                     schema: error
+
+/messaging/submit:
+   post:
+      description: Post a new message
+      responses:
+         200:
+         400:
+
+
