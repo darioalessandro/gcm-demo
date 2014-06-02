@@ -7,6 +7,7 @@ import repositories.Sessions
 import scala.Some
 import entities.SessionCreationFailed
 import entities.SessionCreated
+import scala.util.Try
 
 
 /**
@@ -15,6 +16,10 @@ import entities.SessionCreated
  * Time: 9:04 AM
  * To change this template use File | Settings | File Templates.
  */
+class SessionNotFound extends Exception
+class DuplicateSession extends Exception
+class PersistenceException extends Exception
+
 trait SessionSvc {
   val sessionService:SessionSvcContract
 
@@ -22,38 +27,18 @@ trait SessionSvc {
    * Service contract
    */
   trait SessionSvcContract extends Sessions{
-    def createSession(sessionInfo:SessionInfo):Future[SessionServiceResult]
-    def retrieveSession(sessionId:String):Future[SessionServiceResult]
-    def deleteSession(sessionId:String):Future[SessionServiceResult]
+    def createSession(sessionInfo:SessionInfo):Future[Try[SessionInfo]]
+    def retrieveSession(sessionId:String):Future[Try[SessionInfo]]
+    def deleteSession(sessionId:String):Future[Try[Boolean]]
   }
 
   /**
    * Concrete implementation
    */
   class SessionSvcImpl extends SessionSvcContract {
-    override def createSession(sessionInfo: SessionInfo): Future[SessionServiceResult] =
-      retrieveSession(sessionInfo.id).flatMap[SessionServiceResult] {
-        case SessionNotFound() => repository.create(sessionInfo).map[SessionServiceResult] {
-          case true => SessionCreated()
-          case false => SessionCreationFailed()
-        }
-        case SessionRetrieved(session) => Future{SessionDuplicated()}
-      }
-
-    override def retrieveSession(sessionId: String): Future[SessionServiceResult] =
-      repository.get(sessionId).map {
-        case Some(session) => SessionRetrieved(session)
-        case None => SessionNotFound()
-      }
-
-    override def deleteSession(sessionId: String): Future[SessionServiceResult] =
-      retrieveSession(sessionId).flatMap[SessionServiceResult] {
-        case SessionRetrieved(session) => repository.delete(sessionId).map[SessionServiceResult] {
-          case true => SessionDeleted()
-          case false => SessionDeletionFailed()
-        }
-        case t:SessionServiceResult => Future{t}
-      }
+    override def createSession(sessionInfo: SessionInfo): Future[Try[SessionInfo]] = ???
+    override def retrieveSession(sessionId: String): Future[Try[SessionInfo]] = ???
+    override def deleteSession(sessionId: String): Future[Try[Boolean]] = ???
 
     /**
      * Default implementation uses Anrom
