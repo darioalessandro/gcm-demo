@@ -2,8 +2,12 @@ package services
 
 import scala.concurrent.{Future,ExecutionContext,Await}
 import ExecutionContext.Implicits.global
-import entities.SessionInfo
+import entities._
 import scala.concurrent.duration._
+import entities.SessionDuplicated
+import scala.Some
+import entities.SessionCreationFailed
+import entities.SessionCreated
 
 /**
  * Created with IntelliJ IDEA.
@@ -19,34 +23,46 @@ class SessionSvcSpec extends org.specs2.mutable.Specification with SessionSvc wi
   org.mockito.Mockito.doReturn(mockDb).when(sessionService).repository
 
   "SessionService.create" should {
-    "return true if persisted" in {
+    "return created if persisted" in {
       val data = SessionInfo("anId","gcmid","os","app")
       //stub out the database
       mockDb.create(data).returns(Future{true})
+      mockDb.get(anyString).returns(Future{None})
       val result = Await.result(sessionService.createSession(data),1000 milli)
-      result must beTrue
+      result must beAnyOf(SessionCreated())
     }
-    "return false if persistence fails" in {
+    "return failed if persistence fails" in {
       val data = SessionInfo("anId","gcmid","os","app")
       //stub out the database
       mockDb.create(data).returns(Future{false})
+      mockDb.get(anyString).returns(Future{None})
       val result = Await.result(sessionService.createSession(data),1000 milli)
-      result must beFalse
+      result must beAnyOf(SessionCreationFailed())
+    }
+    "return duplicate result if session exists already" in {
+      val data = SessionInfo("anId","gcmid","os","app")
+      //stub out the database
+      mockDb.get(anyString).returns(Future{Some(SessionInfo("anId","gcmid","os","app"))})
+      mockDb.create(data).returns(Future{true})
+      val result = Await.result(sessionService.createSession(data),1000 milli)
+      result must beAnyOf(SessionDuplicated())
     }
   }
 
   "SessionService.retrieve" should {
-    "return some if exists" in {
+    "return session retrieved if exists" in {
       val data = "someId"
       mockDb.get(data).returns(Future{Some(SessionInfo("anId","gcmid","os","app"))})
       val result = Await.result(sessionService.retrieveSession(data),1000 milli)
-      result must beSome
+      result must beLike {
+        case SessionRetrieved(session) => ok
+      }
     }
-    "return none if none exists" in {
+    "return session not found if none exists" in {
       val data = "someId"
       mockDb.get(data).returns(Future{None})
       val result = Await.result(sessionService.retrieveSession(data),1000 milli)
-      result must beNone
+      result must beAnyOf(SessionNotFound())
     }
   }
 

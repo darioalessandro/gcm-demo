@@ -1,9 +1,12 @@
 package services
 
-import entities.SessionInfo
+import entities._
 import scala.concurrent.Future
-
+import scala.concurrent.ExecutionContext.Implicits.global
 import repositories.Sessions
+import scala.Some
+import entities.SessionCreationFailed
+import entities.SessionCreated
 
 
 /**
@@ -19,22 +22,31 @@ trait SessionSvc {
    * Service contract
    */
   trait SessionSvcContract extends Sessions{
-    def createSession(sessionInfo:SessionInfo):Future[Boolean]
-    def retrieveSession(sessionId:String):Future[Option[SessionInfo]]
-    def deleteSession(sessionId:String):Future[Boolean]
+    def createSession(sessionInfo:SessionInfo):Future[SessionServiceResult]
+    def retrieveSession(sessionId:String):Future[SessionServiceResult]
+    def deleteSession(sessionId:String):Future[SessionServiceResult]
   }
 
   /**
    * Concrete implementation
    */
   class SessionSvcImpl extends SessionSvcContract {
-    override def createSession(sessionInfo: SessionInfo): Future[Boolean] = {
-      repository.create(sessionInfo)
-    }
+    override def createSession(sessionInfo: SessionInfo): Future[SessionServiceResult] =
+      retrieveSession(sessionInfo.id).flatMap[SessionServiceResult] {
+        case SessionNotFound() => repository.create(sessionInfo).map[SessionServiceResult] {
+          case true => SessionCreated()
+          case false => SessionCreationFailed()
+        }
+        case SessionRetrieved(session) => Future{SessionDuplicated()}
+      }
 
-    override def retrieveSession(sessionId: String): Future[Option[SessionInfo]] = repository.get(sessionId)
+    override def retrieveSession(sessionId: String): Future[SessionServiceResult] =
+      repository.get(sessionId).map {
+        case Some(session) => SessionRetrieved(session)
+        case None => SessionNotFound()
+      }
 
-    override def deleteSession(sessionId: String): Future[Boolean] = ???
+    override def deleteSession(sessionId: String): Future[SessionServiceResult] = ???
 
     /**
      * Default implementation uses Anrom
