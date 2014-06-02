@@ -46,7 +46,14 @@ trait SessionSvc {
         case None => SessionNotFound()
       }
 
-    override def deleteSession(sessionId: String): Future[SessionServiceResult] = ???
+    override def deleteSession(sessionId: String): Future[SessionServiceResult] =
+      retrieveSession(sessionId).flatMap[SessionServiceResult] {
+        case SessionRetrieved(session) => repository.delete(sessionId).map[SessionServiceResult] {
+          case true => SessionDeleted()
+          case false => SessionDeletionFailed()
+        }
+        case t:SessionServiceResult => Future{t}
+      }
 
     /**
      * Default implementation uses Anrom
