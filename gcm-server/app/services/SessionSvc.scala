@@ -32,7 +32,7 @@ trait SessionSvc {
       repository.create(sessionInfo)
     }
 
-    override def retrieveSession(sessionId: String): Future[Option[SessionInfo]] = ???
+    override def retrieveSession(sessionId: String): Future[Option[SessionInfo]] = repository.get(sessionId)
 
     override def deleteSession(sessionId: String): Future[Boolean] = ???
 

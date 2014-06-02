@@ -19,14 +19,14 @@ class SessionSvcSpec extends org.specs2.mutable.Specification with SessionSvc wi
   org.mockito.Mockito.doReturn(mockDb).when(sessionService).repository
 
   "SessionService.create" should {
-    "should return true if persisted" in {
+    "return true if persisted" in {
       val data = SessionInfo("anId","gcmid","os","app")
       //stub out the database
       mockDb.create(data).returns(Future{true})
       val result = Await.result(sessionService.createSession(data),1000 milli)
       result must beTrue
     }
-    "should return false if persistence fails" in {
+    "return false if persistence fails" in {
       val data = SessionInfo("anId","gcmid","os","app")
       //stub out the database
       mockDb.create(data).returns(Future{false})
@@ -34,4 +34,20 @@ class SessionSvcSpec extends org.specs2.mutable.Specification with SessionSvc wi
       result must beFalse
     }
   }
+
+  "SessionService.retrieve" should {
+    "return some if exists" in {
+      val data = "someId"
+      mockDb.get(data).returns(Future{Some(SessionInfo("anId","gcmid","os","app"))})
+      val result = Await.result(sessionService.retrieveSession(data),1000 milli)
+      result must beSome
+    }
+    "return none if none exists" in {
+      val data = "someId"
+      mockDb.get(data).returns(Future{None})
+      val result = Await.result(sessionService.retrieveSession(data),1000 milli)
+      result must beNone
+    }
+  }
+
 }
