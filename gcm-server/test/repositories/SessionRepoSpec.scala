@@ -46,4 +46,23 @@ class SessionRepoSpec extends Specification
       result must beAFailedTry[Boolean]
     }
   }
+
+  "delete" should {
+    "return success" in new test.App {
+      val sessionId: String = UUID.randomUUID().toString
+      val data = SessionInfo(sessionId, "reg_id", "os_version", "app_version")
+
+      val createResult = Await.result(repository.create(data),1000 milli)
+      createResult must beASuccessfulTry[Boolean]
+      val result = Await.result(repository.delete(sessionId),1000 milli)
+      result must beASuccessfulTry[Boolean]
+    }
+    "return failure" in new test.App {
+      val sessionId: String = UUID.randomUUID().toString
+      val data = SessionInfo(sessionId, "reg_id", "os_version", "app_version")
+
+      val result = Await.result(repository.delete(sessionId),1000 milli)
+      result must beAFailedTry[Boolean]
+    }
+  }
 }

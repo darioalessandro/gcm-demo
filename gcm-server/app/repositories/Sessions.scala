@@ -73,6 +73,19 @@ trait Sessions {
     }
 
 
-    override def delete(id: String): Future[Try[Boolean]] = ???
+    override def delete(id: String): Future[Try[Boolean]] =
+      Future {
+        DB.withConnection(implicit connection =>
+          SQL(s"DELETE FROM SESSION WHERE id={id}")
+            .on(
+              'id -> id
+            )
+            .executeUpdate()
+        )
+      }.map {
+        case 0 => Failure(new SessionNotFound)
+        case count:Int => Success(true)
+      }
+
   }
 }
