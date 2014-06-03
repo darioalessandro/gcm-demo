@@ -16,10 +16,8 @@ import services.DuplicateSession
  * Time: 9:02 AM
  * To change this template use File | Settings | File Templates.
  */
-object Session extends Controller with services.SessionSvc{
-  //Concrete implementation
-  val sessionService = new SessionSvcImpl
-
+trait Session {
+  this: Controller with services.SessionSvc =>
   def post(id:String) = Action.async { implicit request =>
     forms.CreateSessionForm.getForm.bindFromRequest match {
       case f:Form[CreateSessionForm] if f.hasErrors =>
@@ -39,4 +37,8 @@ object Session extends Controller with services.SessionSvc{
   }
   def get(id:String) = Action.async { implicit request => ??? }
   def delete(id:String) = Action.async { implicit request => ???}
+}
+object Session extends Controller with Session with services.SessionSvc{
+  //Concrete implementation
+  val sessionService = new SessionSvcImpl
 }
