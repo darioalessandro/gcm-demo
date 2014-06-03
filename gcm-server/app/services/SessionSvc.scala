@@ -45,11 +45,8 @@ trait SessionSvc {
       }
     override def retrieveSession(sessionId: String): Future[Try[SessionInfo]] = repository.get(sessionId)
 
-    override def deleteSession(sessionId: String): Future[Try[Boolean]] =
-      repository.get(sessionId).flatMap[Try[Boolean]]{
-        case Success(v) => repository.delete(v.id)
-        case Failure(t) => Future{Failure(t)}
-      }
+    override def deleteSession(sessionId: String): Future[Try[Boolean]] = repository.delete(sessionId)
+
 
     /**
      * Default implementation uses Anrom

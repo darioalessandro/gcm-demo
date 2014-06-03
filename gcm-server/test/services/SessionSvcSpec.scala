@@ -75,7 +75,6 @@ class SessionSvcSpec extends org.specs2.mutable.Specification with SessionSvc wi
     "return session deleted if exists" in {
       val data = "someId"
       mockDb.delete(anyString).returns(Future{Success(true)})
-      mockDb.get(anyString).returns(Future{Success(SessionInfo("anId","gcmid","os","app"))})
       val result = Await.result(sessionService.deleteSession(data),1000 milli)
       result must beLike {
         case Success(_) => ok
@@ -83,8 +82,7 @@ class SessionSvcSpec extends org.specs2.mutable.Specification with SessionSvc wi
     }
     "return not found if session doesn't exist" in {
       val data = "someId"
-      mockDb.delete(anyString).returns(Future{Success(true)})
-      mockDb.get(anyString).returns(Future{Failure(new SessionNotFound)})
+      mockDb.delete(anyString).returns(Future{Failure(new SessionNotFound)})
       val result = Await.result(sessionService.deleteSession(data),1000 milli)
       result must beLike {
         case Failure(e:SessionNotFound) => ok
@@ -93,7 +91,6 @@ class SessionSvcSpec extends org.specs2.mutable.Specification with SessionSvc wi
     "return failed if error deleting" in {
       val data = "someId"
       mockDb.delete(anyString).returns(Future{Failure(new PersistenceException)})
-      mockDb.get(anyString).returns(Future{Success(SessionInfo("anId","gcmid","os","app"))})
       val result = Await.result(sessionService.deleteSession(data),1000 milli)
       result must beLike {
         case Failure(e:PersistenceException) => ok
