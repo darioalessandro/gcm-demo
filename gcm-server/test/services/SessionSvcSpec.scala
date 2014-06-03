@@ -4,10 +4,6 @@ import scala.concurrent.{Future,ExecutionContext,Await}
 import ExecutionContext.Implicits.global
 import entities._
 import scala.concurrent.duration._
-import entities.SessionDuplicated
-import scala.Some
-import entities.SessionCreationFailed
-import entities.SessionCreated
 import scala.util.{Failure, Success}
 
 /**
