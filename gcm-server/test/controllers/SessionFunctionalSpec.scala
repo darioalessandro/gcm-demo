@@ -10,7 +10,7 @@ import play.api.test.Helpers._
  * Time: 9:19 AM
  * To change this template use File | Settings | File Templates.
  */
-class SessionSpec extends org.specs2.mutable.Specification {
+class SessionFunctionalSpec extends org.specs2.mutable.Specification with org.specs2.mock.Mockito{
 
   "POST /sessions/:id" should {
     "create a new session" in new test.App  {
@@ -35,6 +35,7 @@ class SessionSpec extends org.specs2.mutable.Specification {
       val result = route(header,body).get
       status(result) must equalTo(BAD_REQUEST)
     }
+
 
   }
 }

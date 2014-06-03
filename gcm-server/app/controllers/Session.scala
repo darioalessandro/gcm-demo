@@ -8,6 +8,7 @@ import scala.util.{Success,Failure}
 import scala.concurrent.ExecutionContext.Implicits.global
 import play.api.Logger
 import scala.concurrent.Future
+import services.DuplicateSession
 
 /**
  * Created with IntelliJ IDEA.
@@ -28,6 +29,7 @@ object Session extends Controller with services.SessionSvc{
         val session = SessionInfo(id,data.gcmId,data.osVersion,data.appVersion)
         sessionService.createSession(session).map {
           case Success(v:SessionInfo) => Created(v.toJson)
+          case Failure(dupErr:DuplicateSession) => ???
           case Failure(t:Throwable) =>
             Logger.error(t.getMessage,t)
             ???
