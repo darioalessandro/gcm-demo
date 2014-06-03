@@ -4,10 +4,8 @@ import entities._
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import repositories.Sessions
-import scala.Some
-import entities.SessionCreationFailed
-import entities.SessionCreated
-import scala.util.Try
+
+import scala.util.{Success, Try, Failure}
 
 
 /**
@@ -36,9 +34,22 @@ trait SessionSvc {
    * Concrete implementation
    */
   class SessionSvcImpl extends SessionSvcContract {
-    override def createSession(sessionInfo: SessionInfo): Future[Try[SessionInfo]] = ???
-    override def retrieveSession(sessionId: String): Future[Try[SessionInfo]] = ???
-    override def deleteSession(sessionId: String): Future[Try[Boolean]] = ???
+    override def createSession(sessionInfo: SessionInfo): Future[Try[SessionInfo]] =
+      retrieveSession(sessionInfo.id).flatMap[Try[SessionInfo]]{
+        case Success(s) => Future{Failure(new DuplicateSession)}
+        case Failure(t:SessionNotFound) =>repository.create(sessionInfo).map[Try[SessionInfo]] {
+          case Success(_) => Success(sessionInfo)
+          case Failure(e) => Failure(e)
+        }
+        case Failure(t) => Future{Failure(t)}
+      }
+    override def retrieveSession(sessionId: String): Future[Try[SessionInfo]] = repository.get(sessionId)
+
+    override def deleteSession(sessionId: String): Future[Try[Boolean]] =
+      repository.get(sessionId).flatMap[Try[Boolean]]{
+        case Success(v) => repository.delete(v.id)
+        case Failure(t) => Future{Failure(t)}
+      }
 
     /**
      * Default implementation uses Anrom

@@ -2,6 +2,7 @@ package repositories
 
 import entities.SessionInfo
 import scala.concurrent.Future
+import scala.util.Try
 
 /**
  * Created with IntelliJ IDEA.
@@ -13,19 +14,19 @@ trait Sessions {
   val repository:SessionsRepoContract
 
   trait SessionsRepoContract {
-    def create(session:SessionInfo):Future[Boolean]
-    def get(id:String):Future[Option[SessionInfo]]
-    def delete(id:String):Future[Boolean]
+    def create(session:SessionInfo):Future[Try[Boolean]]
+    def get(id:String):Future[Try[SessionInfo]]
+    def delete(id:String):Future[Try[Boolean]]
   }
 
   /**
    * Anorm implementation of the repo
    */
   class SessionsRepoAnorm extends SessionsRepoContract {
-    override def create(session: SessionInfo): Future[Boolean] = ???
+    override def create(session: SessionInfo): Future[Try[Boolean]] = ???
 
-    override def get(id: String): Future[Option[SessionInfo]] = ???
+    override def get(id: String): Future[Try[SessionInfo]] = ???
 
-    override def delete(id: String): Future[Boolean] = ???
+    override def delete(id: String): Future[Try[Boolean]] = ???
   }
 }

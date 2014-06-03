@@ -27,8 +27,8 @@ class SessionSvcSpec extends org.specs2.mutable.Specification with SessionSvc wi
     "return created if persisted" in {
       val data = SessionInfo("anId","gcmid","os","app")
       //stub out the database
-      mockDb.create(data).returns(Future{true})
-      mockDb.get(anyString).returns(Future{None})
+      mockDb.create(data).returns(Future{Success(true)})
+      mockDb.get(anyString).returns(Future{Failure(new SessionNotFound)})
       val result = Await.result(sessionService.createSession(data),1000 milli)
       result must beLike {
         case Success(_) => ok
@@ -37,8 +37,8 @@ class SessionSvcSpec extends org.specs2.mutable.Specification with SessionSvc wi
     "return failed if persistence fails" in {
       val data = SessionInfo("anId","gcmid","os","app")
       //stub out the database
-      mockDb.create(data).returns(Future{false})
-      mockDb.get(anyString).returns(Future{None})
+      mockDb.create(data).returns(Future{Failure(new PersistenceException)})
+      mockDb.get(anyString).returns(Future{Failure(new SessionNotFound)})
       val result = Await.result(sessionService.createSession(data),1000 milli)
       result must beLike {
         case Failure(e:PersistenceException) => ok
@@ -47,8 +47,8 @@ class SessionSvcSpec extends org.specs2.mutable.Specification with SessionSvc wi
     "return duplicate result if session exists already" in {
       val data = SessionInfo("anId","gcmid","os","app")
       //stub out the database
-      mockDb.get(anyString).returns(Future{Some(SessionInfo("anId","gcmid","os","app"))})
-      mockDb.create(data).returns(Future{true})
+      mockDb.get(anyString).returns(Future{Success(SessionInfo("anId","gcmid","os","app"))})
+      mockDb.create(data).returns(Future{Success(true)})
       val result = Await.result(sessionService.createSession(data),1000 milli)
       result must beLike {
         case Failure(e:DuplicateSession) => ok
@@ -59,7 +59,7 @@ class SessionSvcSpec extends org.specs2.mutable.Specification with SessionSvc wi
   "SessionService.retrieve" should {
     "return session retrieved if exists" in {
       val data = "someId"
-      mockDb.get(data).returns(Future{Some(SessionInfo("anId","gcmid","os","app"))})
+      mockDb.get(data).returns(Future{Success(SessionInfo("anId","gcmid","os","app"))})
       val result = Await.result(sessionService.retrieveSession(data),1000 milli)
       result must beLike {
         case Success(session) => ok
@@ -67,7 +67,7 @@ class SessionSvcSpec extends org.specs2.mutable.Specification with SessionSvc wi
     }
     "return session not found if none exists" in {
       val data = "someId"
-      mockDb.get(data).returns(Future{None})
+      mockDb.get(data).returns(Future{Failure(new SessionNotFound)})
       val result = Await.result(sessionService.retrieveSession(data),1000 milli)
       result must beLike {
         case Failure(e:SessionNotFound) => ok
@@ -78,8 +78,8 @@ class SessionSvcSpec extends org.specs2.mutable.Specification with SessionSvc wi
   "SessionService.delete" should {
     "return session deleted if exists" in {
       val data = "someId"
-      mockDb.delete(anyString).returns(Future{true})
-      mockDb.get(anyString).returns(Future{Some(SessionInfo("anId","gcmid","os","app"))})
+      mockDb.delete(anyString).returns(Future{Success(true)})
+      mockDb.get(anyString).returns(Future{Success(SessionInfo("anId","gcmid","os","app"))})
       val result = Await.result(sessionService.deleteSession(data),1000 milli)
       result must beLike {
         case Success(_) => ok
@@ -87,8 +87,8 @@ class SessionSvcSpec extends org.specs2.mutable.Specification with SessionSvc wi
     }
     "return not found if session doesn't exist" in {
       val data = "someId"
-      mockDb.delete(anyString).returns(Future{true})
-      mockDb.get(anyString).returns(Future{None})
+      mockDb.delete(anyString).returns(Future{Success(true)})
+      mockDb.get(anyString).returns(Future{Failure(new SessionNotFound)})
       val result = Await.result(sessionService.deleteSession(data),1000 milli)
       result must beLike {
         case Failure(e:SessionNotFound) => ok
@@ -96,8 +96,8 @@ class SessionSvcSpec extends org.specs2.mutable.Specification with SessionSvc wi
     }
     "return failed if error deleting" in {
       val data = "someId"
-      mockDb.delete(anyString).returns(Future{false})
-      mockDb.get(anyString).returns(Future{Some(SessionInfo("anId","gcmid","os","app"))})
+      mockDb.delete(anyString).returns(Future{Failure(new PersistenceException)})
+      mockDb.get(anyString).returns(Future{Success(SessionInfo("anId","gcmid","os","app"))})
       val result = Await.result(sessionService.deleteSession(data),1000 milli)
       result must beLike {
         case Failure(e:PersistenceException) => ok
