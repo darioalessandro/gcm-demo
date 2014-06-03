@@ -1,7 +1,14 @@
 package controllers
 
-import play.api.test.PlaySpecification
+import play.api.test.{FakeHeaders, FakeRequest, PlaySpecification}
 import play.api.mvc.{Controller, Results}
+import play.api.test.Helpers._
+import play.api.libs.json.Json
+import entities.SessionInfo
+import services.DuplicateSession
+import scala.util.Failure
+import scala.concurrent.Future
+
 
 /**
  * Created with IntelliJ IDEA.
@@ -9,7 +16,40 @@ import play.api.mvc.{Controller, Results}
  * Time: 11:47 AM
  * To change this template use File | Settings | File Templates.
  */
-object SessionSpec extends PlaySpecification with Results {
-  //class TestController extends Controller with Session
+class SessionSpec extends org.specs2.mutable.Specification with org.specs2.mock.Mockito with Results{
+
+  val controller = new Controller with Session with services.SessionSvc{
+    override val sessionService = mock[SessionSvcContract]
+  }
+  "POST /sessions/:id with duplicate" should {
+    "should return conflict" in  {
+      controller.sessionService.createSession(any[SessionInfo]).returns(Future{Failure(new DuplicateSession)})
+      val body = Json.obj(
+        "gcm_id" -> "some gcm id",
+        "os_version" -> "an os version",
+        "app_version" -> "an app version"
+      )
+      val request = FakeRequest(POST,"/sessions/foo")
+                      .withJsonBody(body)
+
+      val result = controller.post("foo")(request)
+      status(result) must equalTo(CONFLICT)
+    }
+    "should return server error" in  {
+      controller.sessionService.createSession(any[SessionInfo]).returns(Future{Failure(new Exception("something went wrong!"))})
+      val body = Json.obj(
+        "gcm_id" -> "some gcm id",
+        "os_version" -> "an os version",
+        "app_version" -> "an app version"
+      )
+      val request = FakeRequest(POST,"/sessions/foo")
+        .withJsonBody(body)
+
+      val result = controller.post("foo")(request)
+      status(result) must equalTo(INTERNAL_SERVER_ERROR)
+    }
+  }
+
 
 }
+

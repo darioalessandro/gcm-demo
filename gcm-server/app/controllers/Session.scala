@@ -21,16 +21,17 @@ trait Session {
   def post(id:String) = Action.async { implicit request =>
     forms.CreateSessionForm.getForm.bindFromRequest match {
       case f:Form[CreateSessionForm] if f.hasErrors =>
+        Logger.warn(f.errorsAsJson.toString())
         Future {BadRequest(f.errorsAsJson)}
       case f:Form[CreateSessionForm] => {
         val data = f.get
         val session = SessionInfo(id,data.gcmId,data.osVersion,data.appVersion)
         sessionService.createSession(session).map {
           case Success(v:SessionInfo) => Created(v.toJson)
-          case Failure(dupErr:DuplicateSession) => ???
+          case Failure(dupErr:DuplicateSession) => Conflict(s"There's already a session with the identifier: $id")
           case Failure(t:Throwable) =>
             Logger.error(t.getMessage,t)
-            ???
+            InternalServerError(t.getMessage)
         }
       }
     }
