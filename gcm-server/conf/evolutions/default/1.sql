@@ -1,7 +1,7 @@
 # --- !Ups
 
-CREATE TABLE session(
-    id  VARCHAR(255) NOT NULL,
+CREATE TABLE SESSION(
+    id  VARCHAR(255) NOT NULL UNIQUE,
     gcm_registration_id VARCHAR(255) NOT NULL,
     os_version VARCHAR(255),
     app_version VARCHAR(255) NOT NULL
@@ -9,4 +9,4 @@ CREATE TABLE session(
 
 # --- !Downs
 
-DROP TABLE session;
+DROP TABLE SESSION;

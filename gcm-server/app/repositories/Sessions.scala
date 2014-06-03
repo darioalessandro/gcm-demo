@@ -2,7 +2,9 @@ package repositories
 
 import entities.SessionInfo
 import scala.concurrent.Future
-import scala.util.Try
+import scala.util.{Success,Failure, Try}
+import services.{PersistenceException, SessionNotFound}
+
 
 /**
  * Created with IntelliJ IDEA.
@@ -23,9 +25,53 @@ trait Sessions {
    * Anorm implementation of the repo
    */
   class SessionsRepoAnorm extends SessionsRepoContract {
-    override def create(session: SessionInfo): Future[Try[Boolean]] = ???
 
-    override def get(id: String): Future[Try[SessionInfo]] = ???
+    import anorm.SQL
+    import play.api.db.DB
+    import play.api.Play.current
+    import scala.concurrent.ExecutionContext.Implicits.global
+    val fields =
+      """
+        |id,
+        |gcm_registration_id,
+        |os_version,
+        |app_version
+      """.stripMargin
+
+    override def create(session: SessionInfo): Future[Try[Boolean]] = {
+      Future {
+        DB.withConnection { implicit connection =>
+          SQL(s"INSERT INTO SESSION($fields) VALUES({id},{gcm_id},{os_version},{app_version});")
+            .on(
+              'id -> session.id,
+              'gcm_id -> session.gcmRegistrationId,
+              'os_version -> session.osVersion,
+              'app_version -> session.appVersion
+            ).executeInsert()
+        }
+      }.map {
+        case None => Success(true)
+        case Some(_) => ???
+      }.recover {
+        case e:Exception => Failure(new PersistenceException)
+      }
+  }
+
+    override def get(id: String): Future[Try[SessionInfo]] = Future {
+      val option: Option[SessionInfo] = DB.withConnection { implicit connection =>
+        SQL( s"""SELECT $fields FROM SESSION WHERE id = {id}""")
+          .on(
+            'id -> id
+          )
+          .as(SessionInfo.fromDb.singleOpt)
+      }
+      //we may or may not get something from the db…
+      option match {
+        case Some(v) => Success(v)
+        case None => Failure(new SessionNotFound)
+      }
+    }
+
 
     override def delete(id: String): Future[Try[Boolean]] = ???
   }

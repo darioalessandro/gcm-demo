@@ -20,6 +20,14 @@ abstract class App(app:FakeApplication = App.app) extends WithApplication(app)
 }
 
 object App {
-  val app = FakeApplication()
+  def app = FakeApplication(additionalConfiguration =
+    Map(
+    "evolutionplugin" -> "enabled",
+    "db.default.driver" -> "org.h2.Driver",
+    "db.default.url" -> "jdbc:h2:mem:default",
+    "applyEvolutions.default" -> "true",
+    "applyDownEvolutions.default" -> "true",
+    "db.default.logStatements" -> "true"
+  ))
 }
 
