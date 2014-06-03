@@ -7,6 +7,7 @@ import entities.SessionInfo
 import scala.util.{Success,Failure}
 import scala.concurrent.ExecutionContext.Implicits.global
 import play.api.Logger
+import scala.concurrent.Future
 
 /**
  * Created with IntelliJ IDEA.
@@ -21,8 +22,7 @@ object Session extends Controller with services.SessionSvc{
   def post(id:String) = Action.async { implicit request =>
     forms.CreateSessionForm.getForm.bindFromRequest match {
       case f:Form[CreateSessionForm] if f.hasErrors =>
-        Logger.warn(f.errorsAsJson.toString())
-        ???
+        Future {BadRequest(f.errorsAsJson)}
       case f:Form[CreateSessionForm] => {
         val data = f.get
         val session = SessionInfo(id,data.gcmId,data.osVersion,data.appVersion)
