@@ -6,7 +6,7 @@ import play.api.test.Helpers._
 import play.api.libs.json.Json
 import entities.SessionInfo
 import services.DuplicateSession
-import scala.util.Failure
+import scala.util.{Success, Failure}
 import scala.concurrent.Future
 
 
@@ -21,9 +21,23 @@ class SessionSpec extends org.specs2.mutable.Specification with org.specs2.mock.
   val controller = new Controller with Session with services.SessionSvc{
     override val sessionService = mock[SessionSvcContract]
   }
-  "POST /sessions/:id with duplicate" should {
-    "should return conflict" in  {
-      controller.sessionService.createSession(any[SessionInfo]).returns(Future{Failure(new DuplicateSession)})
+  val mockService = controller.sessionService
+  "POST /sessions/:id" should {
+    "return 201" in {
+      mockService.createSession(any[SessionInfo]).returns(Future{Success(SessionInfo("id","gcm_id","os","app"))})
+      val body = Json.obj(
+        "gcm_id" -> "some gcm id",
+        "os_version" -> "an os version",
+        "app_version" -> "an app version"
+      )
+      val request = FakeRequest(POST,"/sessions/id")
+        .withJsonBody(body)
+
+      val result = controller.post("id")(request)
+      status(result) must equalTo(CREATED)
+    }
+    "return conflict if duplicate" in  {
+      mockService.createSession(any[SessionInfo]).returns(Future{Failure(new DuplicateSession)})
       val body = Json.obj(
         "gcm_id" -> "some gcm id",
         "os_version" -> "an os version",
@@ -35,8 +49,8 @@ class SessionSpec extends org.specs2.mutable.Specification with org.specs2.mock.
       val result = controller.post("foo")(request)
       status(result) must equalTo(CONFLICT)
     }
-    "should return server error" in  {
-      controller.sessionService.createSession(any[SessionInfo]).returns(Future{Failure(new Exception("something went wrong!"))})
+    "return server error" in  {
+      mockService.createSession(any[SessionInfo]).returns(Future{Failure(new Exception("something went wrong!"))})
       val body = Json.obj(
         "gcm_id" -> "some gcm id",
         "os_version" -> "an os version",
@@ -49,6 +63,8 @@ class SessionSpec extends org.specs2.mutable.Specification with org.specs2.mock.
       status(result) must equalTo(INTERNAL_SERVER_ERROR)
     }
   }
+
+
 
 
 }
