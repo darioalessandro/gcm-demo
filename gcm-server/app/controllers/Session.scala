@@ -36,7 +36,12 @@ trait Session {
       }
     }
   }
-  def get(id:String) = Action.async { implicit request => ??? }
+  def get(id:String) = Action.async { implicit request =>
+    sessionService.retrieveSession(id) map {
+      case Success(v:SessionInfo) => Ok(v.toJson)
+      case _ => ???
+    }
+  }
   def delete(id:String) = Action.async { implicit request => ???}
 }
 object Session extends Controller with Session with services.SessionSvc{

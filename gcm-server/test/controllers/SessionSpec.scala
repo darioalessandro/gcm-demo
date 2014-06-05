@@ -5,7 +5,7 @@ import play.api.mvc.{Controller, Results}
 import play.api.test.Helpers._
 import play.api.libs.json.Json
 import entities.SessionInfo
-import services.DuplicateSession
+import services.{SessionNotFound, DuplicateSession}
 import scala.util.{Success, Failure}
 import scala.concurrent.Future
 
@@ -61,6 +61,28 @@ class SessionSpec extends org.specs2.mutable.Specification with org.specs2.mock.
 
       val result = controller.post("foo")(request)
       status(result) must equalTo(INTERNAL_SERVER_ERROR)
+    }
+  }
+
+  "GET /sessions:id" should {
+    "return 200" in {
+      mockService.retrieveSession(anyString).returns(Future{Success(SessionInfo("id","gcm_id","os","app"))})
+      val request = FakeRequest(GET,"/sessions/id")
+      val result = controller.get("id")(request)
+      status(result) must equalTo(OK)
+    }
+    "returns data" in {
+      val expected: SessionInfo = SessionInfo("id", "gcm_id", "os", "app")
+      mockService.retrieveSession(anyString).returns(Future{Success(expected)})
+      val request = FakeRequest(GET,"/sessions/id")
+      val result = controller.get("id")(request)
+      contentAsJson(result) must equalTo(expected.toJson)
+    }
+    "return 404 if session doesn't exist" in {
+      mockService.retrieveSession(anyString).returns(Future{Failure(new SessionNotFound)})
+      val request = FakeRequest(GET,"/sessions/id")
+      val result = controller.get("id")(request)
+      status(result) must equalTo(NOT_FOUND)
     }
   }
 
