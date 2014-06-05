@@ -28,7 +28,7 @@ trait Session {
         val session = SessionInfo(id,data.gcmId,data.osVersion,data.appVersion)
         sessionService.createSession(session).map {
           case Success(v:SessionInfo) => Created(v.toJson)
-          case Failure(dupErr:DuplicateSession) => Conflict(s"There's already a session with the identifier: $id")
+          case Failure(dupErr:DuplicateSession) => Conflict(s"There's already a session with the identifier: '$id'")
           case Failure(t:Throwable) =>
             Logger.error(t.getMessage,t)
             InternalServerError(t.getMessage)
@@ -39,13 +39,13 @@ trait Session {
   def get(id:String) = Action.async { implicit request =>
     sessionService.retrieveSession(id) map {
       case Success(v:SessionInfo) => Ok(v.toJson)
-      case Failure(t:SessionNotFound) => NotFound(s"Session with id $id doesn't exist")
+      case Failure(t:SessionNotFound) => NotFound(s"Session with id '$id' doesn't exist")
     }
   }
   def delete(id:String) = Action.async { implicit request =>
     sessionService.deleteSession(id) map {
-      case Success(_) => Ok(s"Session $id deleted")
-      case Failure(t:SessionNotFound) => NotFound(s"Session with id $id doesn't exist")
+      case Success(_) => Ok(s"Session '$id' deleted")
+      case Failure(t:SessionNotFound) => NotFound(s"Session with id '$id' doesn't exist")
     }
   }
 }
