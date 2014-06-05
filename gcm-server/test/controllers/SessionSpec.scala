@@ -64,7 +64,7 @@ class SessionSpec extends org.specs2.mutable.Specification with org.specs2.mock.
     }
   }
 
-  "GET /sessions:id" should {
+  "GET /sessions/:id" should {
     "return 200" in {
       mockService.retrieveSession(anyString).returns(Future{Success(SessionInfo("id","gcm_id","os","app"))})
       val request = FakeRequest(GET,"/sessions/id")
@@ -86,7 +86,20 @@ class SessionSpec extends org.specs2.mutable.Specification with org.specs2.mock.
     }
   }
 
-
+  "DELETE /sessions/:id" should {
+    "return 200" in {
+      mockService.deleteSession(anyString).returns(Future{Success(true)})
+      val request = FakeRequest(DELETE,"/sessions/id")
+      val result = controller.delete("id")(request)
+      status(result) must equalTo(OK)
+    }
+    "return 404 if not found" in {
+      mockService.deleteSession(anyString).returns(Future{Failure(new SessionNotFound)})
+      val request = FakeRequest(DELETE,"/sessions/id")
+      val result = controller.delete("id")(request)
+      status(result) must equalTo(NOT_FOUND)
+    }
+  }
 
 
 }

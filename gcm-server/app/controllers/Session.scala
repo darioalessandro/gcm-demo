@@ -40,10 +40,14 @@ trait Session {
     sessionService.retrieveSession(id) map {
       case Success(v:SessionInfo) => Ok(v.toJson)
       case Failure(t:SessionNotFound) => NotFound(s"Session with id $id doesn't exist")
-      case _ => ???
     }
   }
-  def delete(id:String) = Action.async { implicit request => ???}
+  def delete(id:String) = Action.async { implicit request =>
+    sessionService.deleteSession(id) map {
+      case Success(_) => Ok(s"Session $id deleted")
+      case Failure(t:SessionNotFound) => NotFound(s"Session with id $id doesn't exist")
+    }
+  }
 }
 object Session extends Controller with Session with services.SessionSvc{
   //Concrete implementation
