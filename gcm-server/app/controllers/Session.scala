@@ -8,7 +8,7 @@ import scala.util.{Success,Failure}
 import scala.concurrent.ExecutionContext.Implicits.global
 import play.api.Logger
 import scala.concurrent.Future
-import services.DuplicateSession
+import services.{SessionNotFound, DuplicateSession}
 
 /**
  * Created with IntelliJ IDEA.
@@ -39,6 +39,7 @@ trait Session {
   def get(id:String) = Action.async { implicit request =>
     sessionService.retrieveSession(id) map {
       case Success(v:SessionInfo) => Ok(v.toJson)
+      case Failure(t:SessionNotFound) => NotFound(s"Session with id $id doesn't exist")
       case _ => ???
     }
   }
