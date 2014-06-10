@@ -22,6 +22,16 @@
         android:hint="@string/registration_session_id_hint"
         android:textSize="20sp"
         android:layout_margin="10dp"/>
+    <TextView
+        android:id="@+id/error_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:gravity="center"
+        android:textAlignment="center"
+        android:textColor="#FF0000"
+        android:text="Error"
+        android:visibility="gone"/>
     <Button
         android:id="@+id/submit_button"
         android:layout_width="match_parent"

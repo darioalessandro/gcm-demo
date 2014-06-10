@@ -12,8 +12,15 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 import java.io.IOException;
 
@@ -26,11 +33,13 @@ public class RegistrationActivity extends ActionBarActivity implements View.OnCl
     private String registrationId;
     private Button submitButton;
     private EditText sessionIdField;
+    private TextView errorText;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_registration);
-
+        errorText = (TextView)findViewById(R.id.error_text);
+        errorText.setVisibility(View.GONE);
         submitButton = (Button)findViewById(R.id.submit_button);
         submitButton.setOnClickListener(this);
         submitButton.setEnabled(false);
@@ -49,6 +58,7 @@ public class RegistrationActivity extends ActionBarActivity implements View.OnCl
 
             @Override
             public void afterTextChanged(Editable s) {
+                errorText.setVisibility(View.GONE);
                 String text = s.toString();
                 if(text==null || text.isEmpty()) {
                     submitButton.setEnabled(false);
@@ -81,33 +91,66 @@ public class RegistrationActivity extends ActionBarActivity implements View.OnCl
         return super.onOptionsItemSelected(item);
     }
 
+
     private void registerInBackground(final Context context) {
-        new AsyncTask<Void,Void,String>() {
+        final String sessionId = sessionIdField.getText().toString();
+        new AsyncTask<String,Void,Integer>() {
+            private final int SUCCESS = 0;
+            private final int SESSION_ID_ERR = 1;
+            private final int ERROR = 2;
             @Override
-            protected String doInBackground(Void... params) {
+            protected Integer doInBackground(String... params) {
                 try {
-                    if(gcm == null) {
-                        //get a GCM instance
-                        gcm = GoogleCloudMessaging.getInstance(context);
+                    String sessionId = params[0].trim();
+                    if(sessionIdAvailable(sessionId)) {
+                        if(gcm == null) {
+                            //get a GCM instance
+                            gcm = GoogleCloudMessaging.getInstance(context);
+                        }
+                        //register with GCM
+                        registrationId = gcm.register(SENDER_ID);
+                        Log.i(TAG, String.format("Device registered with id: %s", registrationId));
+                        //send to server
+                        storeRegistrationId(registrationId,context);
+                        return SUCCESS;
                     }
-                    //register with GCM
-                    registrationId = gcm.register(SENDER_ID);
-                    Log.i(TAG, String.format("Device registered with id: %s", registrationId));
-                    //send to server
-                    storeRegistrationId(registrationId,context);
+                    else {
+                        return SESSION_ID_ERR;
+                    }
+
                 }
                 catch(IOException err ) {
                     Log.e(TAG,err.getMessage(),err);
                 }
-                return null;
+                return ERROR;
             }
 
             @Override
-            protected void onPostExecute(String s) {
-                //complete
-                finish();
+            protected void onPostExecute(Integer s) {
+                switch(s) {
+                    case SUCCESS:
+                        //complete
+                        finish();
+                        break;
+                    case SESSION_ID_ERR:
+                        errorText.setText(String.format("Session Id: '%s' isn't available",sessionId));
+                        errorText.setVisibility(View.VISIBLE);
+                        break;
+                    case ERROR:
+                        errorText.setText("Unhandled Error");
+                        errorText.setVisibility(View.VISIBLE);
+                        break;
+                }
+
             }
-        }.execute();
+
+            private boolean sessionIdAvailable(String id) throws IOException {
+                String url = String.format("%s/sessions/%s",APP_SERVER_URL, id.trim());
+                HttpClient client = new DefaultHttpClient();
+                HttpGet request = new HttpGet(url);
+                return client.execute(request).getStatusLine().getStatusCode() == HttpStatus.SC_NOT_FOUND;
+            }
+        }.execute(sessionId);
     }
 
     @Override
