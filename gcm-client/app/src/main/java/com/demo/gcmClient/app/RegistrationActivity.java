@@ -2,6 +2,7 @@ package com.demo.gcmClient.app;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -20,7 +21,12 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 
@@ -97,7 +103,8 @@ public class RegistrationActivity extends ActionBarActivity implements View.OnCl
         new AsyncTask<String,Void,Integer>() {
             private final int SUCCESS = 0;
             private final int SESSION_ID_ERR = 1;
-            private final int ERROR = 2;
+            private final int APP_SERVER_REG_ERR = 2;
+            private final int ERROR = 3;
             @Override
             protected Integer doInBackground(String... params) {
                 try {
@@ -111,8 +118,16 @@ public class RegistrationActivity extends ActionBarActivity implements View.OnCl
                         registrationId = gcm.register(SENDER_ID);
                         Log.i(TAG, String.format("Device registered with id: %s", registrationId));
                         //send to server
-                        storeRegistrationId(registrationId,context);
-                        return SUCCESS;
+                        String osVersion = Integer.toString(Build.VERSION.SDK_INT);
+                        String appVersion = Integer.toString(getAppVersion(context));
+                        if(registerWithServer(sessionId,registrationId,osVersion,appVersion)) {
+                            storeRegistrationId(registrationId,context);
+                            return SUCCESS;
+                        }
+                        else {
+                            return APP_SERVER_REG_ERR;
+                        }
+
                     }
                     else {
                         return SESSION_ID_ERR;
@@ -121,8 +136,12 @@ public class RegistrationActivity extends ActionBarActivity implements View.OnCl
                 }
                 catch(IOException err ) {
                     Log.e(TAG,err.getMessage(),err);
+                    return ERROR;
+                } catch (JSONException e) {
+                    Log.e(TAG,e.getMessage(),e);
+                    return ERROR;
                 }
-                return ERROR;
+
             }
 
             @Override
@@ -134,6 +153,10 @@ public class RegistrationActivity extends ActionBarActivity implements View.OnCl
                         break;
                     case SESSION_ID_ERR:
                         errorText.setText(String.format("Session Id: '%s' isn't available",sessionId));
+                        errorText.setVisibility(View.VISIBLE);
+                        break;
+                    case APP_SERVER_REG_ERR:
+                        errorText.setText(String.format("App server registration error (Session Id: '%s')",sessionId));
                         errorText.setVisibility(View.VISIBLE);
                         break;
                     case ERROR:
@@ -149,6 +172,27 @@ public class RegistrationActivity extends ActionBarActivity implements View.OnCl
                 HttpClient client = new DefaultHttpClient();
                 HttpGet request = new HttpGet(url);
                 return client.execute(request).getStatusLine().getStatusCode() == HttpStatus.SC_NOT_FOUND;
+            }
+
+            private boolean registerWithServer(String id, String gcmId, String osVersion, String appVersion) throws IOException, JSONException {
+                String url = String.format("%s/sessions/%s",APP_SERVER_URL, id.trim());
+                HttpClient client = new DefaultHttpClient();
+                HttpPost request = new HttpPost(url);
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("gcm_id",gcmId);
+                jsonObject.put("os_version",osVersion);
+                jsonObject.put("app_version",appVersion);
+                final String json = jsonObject.toString();
+                request.setEntity(new StringEntity(json));
+                request.setHeader("Content-type","application/json");
+                final int statusCode = client.execute(request).getStatusLine().getStatusCode();
+                if(statusCode == HttpStatus.SC_CREATED) {
+                    return true;
+                }
+                else {
+                    Log.e(TAG,String.format("Server registration returned: %d\n%s",statusCode,json));
+                    return false;
+                }
             }
         }.execute(sessionId);
     }
