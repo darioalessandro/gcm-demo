@@ -88,7 +88,7 @@ public class MainActivity extends ActionBarActivity {
             return true;
         }
         if (id == R.id.action_reset) {
-            reset(this);
+            reset();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -110,7 +110,7 @@ public class MainActivity extends ActionBarActivity {
         return true;
     }
     private String getRegistrationId(Context context) {
-        final SharedPreferences preferences = getGcmSharedPreferences(context);
+        final SharedPreferences preferences = getGcmSharedPreferences();
         String registrationId = preferences.getString(PROPERTY_REG_ID,"");
         if(registrationId.isEmpty()) {
             Log.i(TAG,"Registration not found");
@@ -126,7 +126,7 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private void storeRegistrationId(String registrationId, Context context) {
-        final SharedPreferences preferences = getGcmSharedPreferences(context);
+        final SharedPreferences preferences = getGcmSharedPreferences();
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString(PROPERTY_REG_ID, registrationId);
         editor.putInt(PROPERTY_APP_VERSION, getAppVersion(context));
@@ -144,12 +144,12 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    private SharedPreferences getGcmSharedPreferences(Context context) {
+    private SharedPreferences getGcmSharedPreferences() {
         return getSharedPreferences(MainActivity.class.getSimpleName(), MODE_PRIVATE);
     }
 
-    private void reset(Context context) {
-        SharedPreferences preferences = getGcmSharedPreferences(context);
+    private void reset() {
+        SharedPreferences preferences = getGcmSharedPreferences();
         SharedPreferences.Editor editor = preferences.edit();
         editor.remove(PROPERTY_REG_ID);
         editor.remove(PROPERTY_APP_VERSION);
