@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,6 +14,8 @@ import android.view.MenuItem;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
+
+import java.io.IOException;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -34,13 +37,32 @@ public class MainActivity extends ActionBarActivity {
             registrationId = getRegistrationId(this);
             if(registrationId.isEmpty()) {
                 //register in the background
-                registerInBackground();
+                registerInBackground(this);
             }
         }
     }
 
-    private void registerInBackground() {
-        throw new RuntimeException("Not implemented");
+    private void registerInBackground(final Context context) {
+        new AsyncTask<Void,Void,String>() {
+            @Override
+            protected String doInBackground(Void... params) {
+                try {
+                    if(gcm == null) {
+                        //get a GCM instance
+                        gcm = GoogleCloudMessaging.getInstance(context);
+                    }
+                    //register with GCM
+                    registrationId = gcm.register(SENDER_ID);
+                    Log.i(TAG,String.format("Device registered with id: %s",registrationId));
+                    //send to server
+                    storeRegistrationId(registrationId,context);
+                }
+                catch(IOException err ) {
+                    Log.e(TAG,err.getMessage(),err);
+                }
+                return null;
+            }
+        }.execute();
     }
 
     @Override
@@ -63,6 +85,10 @@ public class MainActivity extends ActionBarActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.action_settings) {
+            return true;
+        }
+        if (id == R.id.action_reset) {
+            reset(this);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -99,6 +125,15 @@ public class MainActivity extends ActionBarActivity {
         return registrationId;
     }
 
+    private void storeRegistrationId(String registrationId, Context context) {
+        final SharedPreferences preferences = getGcmSharedPreferences(context);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(PROPERTY_REG_ID, registrationId);
+        editor.putInt(PROPERTY_APP_VERSION, getAppVersion(context));
+        editor.commit();
+    }
+
+
     private static int getAppVersion(Context context) {
         try {
             PackageInfo packageInfo = context.getPackageManager().getPackageInfo(context.getPackageName(),0);
@@ -111,6 +146,15 @@ public class MainActivity extends ActionBarActivity {
 
     private SharedPreferences getGcmSharedPreferences(Context context) {
         return getSharedPreferences(MainActivity.class.getSimpleName(), MODE_PRIVATE);
+    }
+
+    private void reset(Context context) {
+        SharedPreferences preferences = getGcmSharedPreferences(context);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.remove(PROPERTY_REG_ID);
+        editor.remove(PROPERTY_APP_VERSION);
+        editor.apply();
+        Log.i(TAG,"Reset completed");
     }
 
 
