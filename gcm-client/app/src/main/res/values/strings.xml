@@ -5,5 +5,9 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="action_reset">Reset</string>
+    <string name="title_activity_registration">Registration</string>
+    <string name="registration_instructions">Register this app with GCM and application server.</string>
+    <string name="registration_session_id_hint">session identifier</string>
+    <string name="registration_submit_text">Register</string>
 
 </resources>
