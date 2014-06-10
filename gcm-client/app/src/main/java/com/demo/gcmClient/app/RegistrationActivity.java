@@ -4,6 +4,8 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -28,9 +30,35 @@ public class RegistrationActivity extends ActionBarActivity implements View.OnCl
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_registration);
-        sessionIdField = (EditText)findViewById(R.id.sessionId_field);
+
         submitButton = (Button)findViewById(R.id.submit_button);
         submitButton.setOnClickListener(this);
+        submitButton.setEnabled(false);
+
+        sessionIdField = (EditText)findViewById(R.id.sessionId_field);
+        sessionIdField.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String text = s.toString();
+                if(text==null || text.isEmpty()) {
+                    submitButton.setEnabled(false);
+                }
+                else {
+                    submitButton.setEnabled(true);
+                }
+            }
+        });
+
     }
 
 
