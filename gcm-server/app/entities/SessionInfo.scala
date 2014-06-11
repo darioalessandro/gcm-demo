@@ -1,8 +1,12 @@
 package entities
 
 import play.api.libs.json._
+import play.api.libs.functional.syntax._
 import anorm._
 import anorm.SqlParser._
+
+import scala.util.parsing.json.JSONObject
+
 /**
  * Created with IntelliJ IDEA.
  * Date: 2014-06-02
@@ -13,7 +17,21 @@ case class SessionInfo(id:String,gcmRegistrationId:String,osVersion:String,appVe
   def toJson:JsValue = SessionInfo.toJson(this)
 }
 object SessionInfo extends ((String,String,String,String) => SessionInfo) {
-  implicit val jsonFormat = Json.format[SessionInfo]
+  implicit val jsonReads:Reads[SessionInfo] = (
+        (__ \ "id").read[String] and
+        (__ \ "gcm_id").read[String] and
+        (__ \ "os_version").read[String] and
+        (__ \ "app_version").read[String]
+      )(SessionInfo)
+
+  implicit val jsonWrites = new Writes[SessionInfo] {
+    override def writes(o: SessionInfo): JsValue = Json.obj(
+      "id" -> o.id,
+      "gcm_id" -> o.gcmRegistrationId,
+      "os_version" -> o.osVersion,
+      "app_version" -> o.appVersion
+    )
+  }
   //sql stuff
   val sqlResult =
     get[String]("id") ~

@@ -54,7 +54,7 @@ schemas:
                      schema: session
                      example: |
                         {
-                           "gcm_registration_id":"some id",
+                           "gcm_id":"some id",
                            "os_version":"4.4",
                            "app_version:"1.0-SNAPSHOT"
                         }
@@ -75,7 +75,7 @@ schemas:
                      schema: session
                      example: |
                         {
-                           "gcm_registration_id": "some GCM id",
+                           "gcm_id": "some GCM id",
                            "os_version": "4.3",
                            "app_version": "1.0-SNAPSHOT"
                         }
@@ -93,11 +93,11 @@ schemas:
                   application/json:
                      schema: error
 
-/messaging/submit:
-   post:
-      description: Post a new message
-      responses:
-         200:
-         400:
+   /{sessionId}/message:
+      post:
+        description: Post a new message
+        responses:
+            200:
+            400:
 
 

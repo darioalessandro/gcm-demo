@@ -40,12 +40,14 @@ trait Session {
     sessionService.retrieveSession(id) map {
       case Success(v:SessionInfo) => Ok(v.toJson)
       case Failure(t:SessionNotFound) => NotFound(s"Session with id '$id' doesn't exist")
+      case Failure(t) => ServiceUnavailable(s"Unhandled server error: ${t.getMessage}")
     }
   }
   def delete(id:String) = Action.async { implicit request =>
     sessionService.deleteSession(id) map {
       case Success(_) => Ok(s"Session '$id' deleted")
       case Failure(t:SessionNotFound) => NotFound(s"Session with id '$id' doesn't exist")
+      case Failure(t) => ServiceUnavailable(s"Unhandled server error: ${t.getMessage}")
     }
   }
 }
