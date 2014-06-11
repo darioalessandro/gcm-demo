@@ -48,7 +48,20 @@ class MessagingSpec extends org.specs2.mutable.Specification with org.specs2.moc
         .withJsonBody(body)
 
       val result = controller.post("id")(request)
-      status(result) must equalTo(NOT_FOUND)    }
+      status(result) must equalTo(NOT_FOUND)
+    }
+    "return 400 (BAD REQUEST) if request body is borked" in {
+      mockSessionService.retrieveSession(anyString).returns(Future{Failure(new SessionNotFound)})
+      mockMessagingService.sendMessage(anyString,any[Message]).returns(Future{Success(true)})
+      val body = Json.obj(
+        "borked" -> "some content"
+      )
+      val request = FakeRequest(POST,"/sessions/id/message")
+        .withJsonBody(body)
+
+      val result = controller.post("id")(request)
+      status(result) must equalTo(BAD_REQUEST)
+    }
 
   }
 }
