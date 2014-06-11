@@ -1,4 +1,5 @@
 GET     /sessions/:id       controllers.Session.get(id:String)
 POST    /sessions/:id       controllers.Session.post(id:String)
 DELETE  /sessions/:id       controllers.Session.delete(id:String)
+POST    /sessions/:id/message       controllers.Messaging.post(id:String)
 
