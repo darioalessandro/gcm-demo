@@ -62,6 +62,29 @@ class MessagingSpec extends org.specs2.mutable.Specification with org.specs2.moc
       val result = controller.post("id")(request)
       status(result) must equalTo(BAD_REQUEST)
     }
+    "return 500 if messaging service fails" in {
+      mockSessionService.retrieveSession(anyString).returns(Future{Success(SessionInfo("foo","bar","bar","bar"))})
+      mockMessagingService.sendMessage(anyString, any[Message]).returns(Future{Failure(new Exception)})
+      val body = Json.obj(
+        "content" -> "some content"
+      )
+      val request = FakeRequest(POST,"/sessions/id/message")
+        .withJsonBody(body)
 
+      val result = controller.post("id")(request)
+      status(result) must equalTo(INTERNAL_SERVER_ERROR)
+    }
+    "return 500 if session service fails" in {
+      mockSessionService.retrieveSession(anyString).returns(Future{Failure(new Exception)})
+      mockMessagingService.sendMessage(anyString,any[Message]).returns(Future{Success(true)})
+      val body = Json.obj(
+        "content" -> "some content"
+      )
+      val request = FakeRequest(POST,"/sessions/id/message")
+        .withJsonBody(body)
+
+      val result = controller.post("id")(request)
+      status(result) must equalTo(INTERNAL_SERVER_ERROR)
+    }
   }
 }

@@ -2,7 +2,7 @@ package controllers
 
 import entities.{SessionInfo, Message}
 import forms.SubmitMessageForm
-import play.api.mvc.{Action, Controller}
+import play.api.mvc.{SimpleResult, Action, Controller}
 import services.{SessionNotFound, SessionSvc, MessagingSvc}
 import play.api.data.Form
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -21,16 +21,16 @@ trait Messaging {
     forms.SubmitMessageForm.getForm.bindFromRequest() match {
       case f:Form[SubmitMessageForm] if f.hasErrors => Future{BadRequest(s"${f.errorsAsJson}")}
       case f:Form[SubmitMessageForm] => {
-        sessionService.retrieveSession(id) map {
+        sessionService.retrieveSession(id) flatMap  {
           case Success(s:SessionInfo) =>
-            messagingService.sendMessage(s.gcmRegistrationId,Message(f.get.content)) match {
-              case b => Accepted(s"Message sent")
+            messagingService.sendMessage(s.gcmRegistrationId,Message(f.get.content)) map {
+              case Success(b:Boolean) => Accepted("Message sent")
+              case Failure(t:Throwable) => InternalServerError(s"Error while sending message: ${t.getMessage}")
             }
-          case Failure(t:SessionNotFound) => NotFound(s"Session '$id' not found")
-          case Failure(t:Throwable) => ???
+          case Failure(t:SessionNotFound) => Future{NotFound(s"Session '$id' not found")}
+          case Failure(t:Throwable) => Future{InternalServerError(s"Error while sending message: ${t.getMessage}")}
         }
       }
-      case _ => ???
     }
   }
 
