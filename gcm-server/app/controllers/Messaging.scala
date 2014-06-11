@@ -1,8 +1,9 @@
 package controllers
 
+import com.typesafe.config.ConfigFactory
 import entities.{SessionInfo, Message}
 import forms.SubmitMessageForm
-import play.api.mvc.{SimpleResult, Action, Controller}
+import play.api.mvc.{Action, Controller}
 import services.{SessionNotFound, SessionSvc, MessagingSvc}
 import play.api.data.Form
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -36,7 +37,7 @@ trait Messaging {
 
 }
 object Messaging extends Controller with Messaging with MessagingSvc with SessionSvc{
-  override val messagingService = new GcmMessagingSvc
+  override val messagingService = new GcmMessagingSvc(ConfigFactory.load().getString("gcm.api.key"))
   override val sessionService = new SessionSvcImpl
 }
 

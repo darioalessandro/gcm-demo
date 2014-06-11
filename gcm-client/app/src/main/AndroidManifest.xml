@@ -35,9 +35,10 @@
             android:name="com.demo.gcmClient.receivers.GcmBroadcastReceiver"
             android:permission="com.google.android.c2dm.permission.SEND" >
             <intent-filter>
-                <action android:name="com.google.android.c2dm.permission.RECEIVE" />
-
-                <category android:name="com.demo.gcmClient" />
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+                <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
+                <action android:name="com.google.android.c2dm.intent.GCM_RECEIVED_ACTION" />
+                <category android:name="com.demo.gcmCient.app"/>
             </intent-filter>
         </receiver>
 
