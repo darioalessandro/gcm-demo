@@ -40,7 +40,7 @@ object SessionInfo extends ((String,String,String,String) => SessionInfo) {
     get[String]("app_version")
 
   val fromDb = sqlResult.map {
-    case id~gcm_registration_id~os_version~app_version => SessionInfo(id,gcm_registration_id,os_version,app_version)
+    case session_id~gcm_registration_id~os_version~app_version => SessionInfo(session_id,gcm_registration_id,os_version,app_version)
   }
 
   //json
