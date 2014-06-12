@@ -38,7 +38,7 @@
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
                 <!-- for some reason on my 4.0.4 device, RECEIVE isn't sent, only REGISTRATION -->
                 <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
-                <!--<action android:name="com.google.android.c2dm.intent.GCM_RECEIVED_ACTION" />-->
+                <action android:name="com.google.android.c2dm.intent.GCM_RECEIVED_ACTION" />
                 <category android:name="com.demo.gcmCient.app"/>
             </intent-filter>
         </receiver>
