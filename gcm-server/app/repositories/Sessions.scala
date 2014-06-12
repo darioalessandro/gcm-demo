@@ -51,7 +51,9 @@ trait Sessions {
         }
       }.map {
         case None => Success(true)
-        case Some(_) => ???
+        case Some(id) =>
+          //we got some id
+          Success(true)
       }.recover {
         case e:Exception => Failure(new PersistenceException(e.getMessage))
       }
