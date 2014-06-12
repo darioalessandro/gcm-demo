@@ -33,7 +33,7 @@ class SessionSvcSpec extends org.specs2.mutable.Specification with SessionSvc wi
     "return failed if persistence fails" in {
       val data = SessionInfo("anId","gcmid","os","app")
       //stub out the database
-      mockDb.create(data).returns(Future{Failure(new PersistenceException("persistence error"git ))})
+      mockDb.create(data).returns(Future{Failure(new PersistenceException("persistence error"))})
       mockDb.get(anyString).returns(Future{Failure(new SessionNotFound)})
       val result = Await.result(sessionService.createSession(data),1000 milli)
       result must beLike {

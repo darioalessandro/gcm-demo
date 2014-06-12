@@ -34,7 +34,7 @@ object SessionInfo extends ((String,String,String,String) => SessionInfo) {
   }
   //sql stuff
   val sqlResult =
-    get[String]("id") ~
+    get[String]("session_id") ~
     get[String]("gcm_registration_id") ~
     get[String]("os_version") ~
     get[String]("app_version")

@@ -32,7 +32,7 @@ trait Sessions {
     import scala.concurrent.ExecutionContext.Implicits.global
     val fields =
       """
-        |id,
+        |session_id,
         |gcm_registration_id,
         |os_version,
         |app_version
@@ -41,9 +41,9 @@ trait Sessions {
     override def create(session: SessionInfo): Future[Try[Boolean]] = {
       Future {
         DB.withConnection { implicit connection =>
-          SQL(s"INSERT INTO SESSION($fields) VALUES({id},{gcm_id},{os_version},{app_version});")
+          SQL(s"INSERT INTO SESSION($fields) VALUES({session_id},{gcm_id},{os_version},{app_version});")
             .on(
-              'id -> session.id,
+              'session_id -> session.id,
               'gcm_id -> session.gcmRegistrationId,
               'os_version -> session.osVersion,
               'app_version -> session.appVersion
@@ -59,9 +59,9 @@ trait Sessions {
 
     override def get(id: String): Future[Try[SessionInfo]] = Future {
       val option: Option[SessionInfo] = DB.withConnection { implicit connection =>
-        SQL( s"""SELECT $fields FROM SESSION WHERE id = {id}""")
+        SQL( s"""SELECT $fields FROM SESSION WHERE session_id = {session_id}""")
           .on(
-            'id -> id
+            'session_id -> id
           )
           .as(SessionInfo.fromDb.singleOpt)
       }
@@ -76,9 +76,9 @@ trait Sessions {
     override def delete(id: String): Future[Try[Boolean]] =
       Future {
         DB.withConnection(implicit connection =>
-          SQL(s"DELETE FROM SESSION WHERE id={id}")
+          SQL(s"DELETE FROM SESSION WHERE session_id={session_id}")
             .on(
-              'id -> id
+              'session_id -> id
             )
             .executeUpdate()
         )
