@@ -47,16 +47,14 @@ trait Sessions {
               'gcm_id -> session.gcmRegistrationId,
               'os_version -> session.osVersion,
               'app_version -> session.appVersion
-            ).executeInsert()
+            ).executeUpdate()
         }
       }.map {
-        case None => Success(true)
-        case Some(id) =>
-          //we got some id
-          Success(true)
+        case i:Int if i>0 => Success(true)
+        case i:Int  => Failure(new PersistenceException(s"Insert failed"))
       }.recover {
         case e:Exception =>
-          e.printStackTrace()
+          //e.printStackTrace()
           Failure(new PersistenceException(e.getMessage))
       }
   }
