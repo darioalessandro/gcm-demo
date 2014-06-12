@@ -55,7 +55,9 @@ trait Sessions {
           //we got some id
           Success(true)
       }.recover {
-        case e:Exception => Failure(new PersistenceException(e.getMessage))
+        case e:Exception =>
+          e.printStackTrace()
+          Failure(new PersistenceException(e.getMessage))
       }
   }
 
