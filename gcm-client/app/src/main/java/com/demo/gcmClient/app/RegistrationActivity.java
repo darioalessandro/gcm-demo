@@ -17,18 +17,17 @@ import android.widget.TextView;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
-import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.Properties;
 
 import static com.demo.gcmClient.app.RegistrationHelper.*;
 
@@ -98,7 +97,11 @@ public class RegistrationActivity extends ActionBarActivity implements View.OnCl
     }
 
 
-    private void registerInBackground(final Context context) {
+    private void registerInBackground(final Context context) throws IOException {
+        //load the sender id and app server url from properties
+        final String SENDER_ID = getResources().getString(R.string.gcm_sender_id);
+        final String APP_SERVER_URL = getResources().getString(R.string.app_server_url);
+
         final String sessionId = sessionIdField.getText().toString();
         new AsyncTask<String,Void,Integer>() {
             private final int SUCCESS = 0;
@@ -199,6 +202,11 @@ public class RegistrationActivity extends ActionBarActivity implements View.OnCl
 
     @Override
     public void onClick(View v) {
-        registerInBackground(this);
+        try {
+            registerInBackground(this);
+        } catch (IOException e) {
+            Log.e(TAG,e.getMessage(),e);
+            errorText.setText(String.format("Unhandled registration error: %s",e.getMessage()));
+        }
     }
 }

@@ -10,12 +10,10 @@ import android.util.Log;
 * Created by hyleung on 2014-06-10.
 */
 class RegistrationHelper {
-    public static final String SENDER_ID = "4524831114";
-    final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+    public static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     public static final String TAG = "GCM_DEMO";
     public static final String PROPERTY_REG_ID = "GCM_REGISTRATION_ID";
     public static final String PROPERTY_APP_VERSION = "APP_VERSION";
-    public static final String APP_SERVER_URL = "http://192.168.1.68:9000";
     static SharedPreferences getGcmSharedPreferences(Context context) {
         return context.getSharedPreferences(MainActivity.class.getSimpleName(), Context.MODE_PRIVATE);
     }

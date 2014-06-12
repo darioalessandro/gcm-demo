@@ -16,7 +16,22 @@ android {
             runProguard false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+
     }
+
+}
+            
+	
+android.applicationVariants.all { variant ->
+	variant.mergeResources.doLast{
+		File valuesFile = file("${buildDir}/intermediates/res/${variant.dirName}/values/values.xml")
+		String content = valuesFile.getText('UTF-8')
+		println("Replacing GCM_SENDER_ID with $gcmSenderId")			
+		content = content.replaceAll(/GCM_SENDER_ID/,gcmSenderId)
+		println("Replacing APP_SERVER_URL with $appServerUrl")			
+		content = content.replaceAll(/APP_SERVER_URL/,appServerUrl)
+		valuesFile.write(content,'UTF-8')		
+	}
 }
 
 dependencies {
@@ -25,3 +40,4 @@ dependencies {
     compile 'com.android.support:support-v4:19.1.0'
     compile 'com.google.android.gms:play-services:4.4.52'
 }
+
