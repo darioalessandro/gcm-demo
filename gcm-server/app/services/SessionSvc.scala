@@ -16,7 +16,7 @@ import scala.util.{Success, Try, Failure}
  */
 class SessionNotFound extends Exception
 class DuplicateSession extends Exception
-class PersistenceException extends Exception
+class PersistenceException(msg:String) extends Exception(msg)
 
 trait SessionSvc {
   val sessionService:SessionSvcContract

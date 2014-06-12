@@ -53,7 +53,7 @@ trait Sessions {
         case None => Success(true)
         case Some(_) => ???
       }.recover {
-        case e:Exception => Failure(new PersistenceException)
+        case e:Exception => Failure(new PersistenceException(e.getMessage))
       }
   }
 
