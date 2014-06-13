@@ -1,4 +1,4 @@
-package com.demo.gcmClient.app;
+package com.demo.gcmClient;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -27,9 +27,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.Properties;
-
-import static com.demo.gcmClient.app.RegistrationHelper.*;
 
 
 public class RegistrationActivity extends ActionBarActivity implements View.OnClickListener {
@@ -119,12 +116,12 @@ public class RegistrationActivity extends ActionBarActivity implements View.OnCl
                         }
                         //register with GCM
                         registrationId = gcm.register(SENDER_ID);
-                        Log.i(TAG, String.format("Device registered with id: %s", registrationId));
+                        Log.i(RegistrationHelper.TAG, String.format("Device registered with id: %s", registrationId));
                         //send to server
                         String osVersion = Integer.toString(Build.VERSION.SDK_INT);
-                        String appVersion = Integer.toString(getAppVersion(context));
+                        String appVersion = Integer.toString(RegistrationHelper.getAppVersion(context));
                         if(registerWithServer(sessionId,registrationId,osVersion,appVersion)) {
-                            storeRegistrationId(registrationId,context);
+                            RegistrationHelper.storeRegistrationId(registrationId, context);
                             return SUCCESS;
                         }
                         else {
@@ -138,10 +135,10 @@ public class RegistrationActivity extends ActionBarActivity implements View.OnCl
 
                 }
                 catch(IOException err ) {
-                    Log.e(TAG,err.getMessage(),err);
+                    Log.e(RegistrationHelper.TAG,err.getMessage(),err);
                     return ERROR;
                 } catch (JSONException e) {
-                    Log.e(TAG,e.getMessage(),e);
+                    Log.e(RegistrationHelper.TAG,e.getMessage(),e);
                     return ERROR;
                 }
 
@@ -193,7 +190,7 @@ public class RegistrationActivity extends ActionBarActivity implements View.OnCl
                     return true;
                 }
                 else {
-                    Log.e(TAG,String.format("Server registration returned: %d\n%s",statusCode,json));
+                    Log.e(RegistrationHelper.TAG,String.format("Server registration returned: %d\n%s",statusCode,json));
                     return false;
                 }
             }
@@ -205,7 +202,7 @@ public class RegistrationActivity extends ActionBarActivity implements View.OnCl
         try {
             registerInBackground(this);
         } catch (IOException e) {
-            Log.e(TAG,e.getMessage(),e);
+            Log.e(RegistrationHelper.TAG,e.getMessage(),e);
             errorText.setText(String.format("Unhandled registration error: %s",e.getMessage()));
         }
     }

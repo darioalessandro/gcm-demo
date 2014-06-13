@@ -1,4 +1,4 @@
-package com.demo.gcmClient.app;
+package com.demo.gcmClient;
 
 import android.content.Context;
 import android.content.SharedPreferences;

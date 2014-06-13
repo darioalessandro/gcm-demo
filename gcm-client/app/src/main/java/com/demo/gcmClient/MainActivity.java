@@ -1,8 +1,6 @@
-package com.demo.gcmClient.app;
+package com.demo.gcmClient;
 
-import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,9 +10,6 @@ import android.view.MenuItem;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
-
-import java.io.IOException;
-import static com.demo.gcmClient.app.RegistrationHelper.*;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -37,7 +32,7 @@ public class MainActivity extends ActionBarActivity {
     protected void onResume() {
         super.onResume();
         if(checkPlayServices()) {
-            registrationId = getRegistrationId(this);
+            registrationId = RegistrationHelper.getRegistrationId(this);
             if(registrationId.isEmpty()) {
                 //present the registration screen
                 Intent intent = new Intent(this,RegistrationActivity.class);
@@ -63,7 +58,7 @@ public class MainActivity extends ActionBarActivity {
             return true;
         }
         if (id == R.id.action_reset) {
-            reset(this);
+            RegistrationHelper.reset(this);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -74,10 +69,10 @@ public class MainActivity extends ActionBarActivity {
         Log.d("GCM_DEMO",String.format("PlayServices availability check: %d",resultCode));
         if(resultCode!= ConnectionResult.SUCCESS) {
             if(GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
-                GooglePlayServicesUtil.getErrorDialog(resultCode,this,PLAY_SERVICES_RESOLUTION_REQUEST).show();
+                GooglePlayServicesUtil.getErrorDialog(resultCode,this, RegistrationHelper.PLAY_SERVICES_RESOLUTION_REQUEST).show();
             }
             else {
-                Log.e(TAG,"This device is not supported");
+                Log.e(RegistrationHelper.TAG,"This device is not supported");
                 finish();
             }
             return false;

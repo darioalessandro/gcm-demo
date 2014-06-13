@@ -1,27 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.demo.gcmClient.app" >
+    package="com.demo.gcmClient" >
 
-    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+    <!-- GCM connects to Google Services. -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- GET_ACCOUNTS recquired prior to 4.0.4 -->
+
+    <!-- GCM requires a Google account. -->
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+
+    <!-- Keeps the processor from sleeping when a message is received. -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <!-- Permission to prevent other applications from subscribing to our notifications -->
     <permission
-        android:name="com.demo.gcmClient.app.permission.C2D_MESSAGE"
+        android:name="com.demo.gcmClient.permission.C2D_MESSAGE"
         android:protectionLevel="signature" />
 
-    <uses-permission android:name="com.demo.gcmClient.app.permission.C2D_MESSAGE" />
+    <uses-permission android:name="com.demo.gcmClient.permission.C2D_MESSAGE" />
+
+
+    <!-- This app has permission to register and receive data message. -->
+    <uses-permission
+        android:name="com.google.android.c2dm.permission.RECEIVE" />
 
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+
         <activity
             android:name=".MainActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -29,23 +42,19 @@
             </intent-filter>
         </activity>
 
-        <service android:name="com.demo.gcmClient.services.GcmIntentService" />
+        <service android:name=".GcmIntentService" />
 
         <receiver
-            android:name="com.demo.gcmClient.receivers.GcmBroadcastReceiver"
+            android:name=".GcmBroadcastReceiver"
             android:permission="com.google.android.c2dm.permission.SEND" >
             <intent-filter>
+                <!-- Receives the actual messages. -->
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
-                <!-- for some reason on my 4.0.4 device, RECEIVE isn't sent, only REGISTRATION -->
-                <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
-                <action android:name="com.google.android.c2dm.intent.GCM_RECEIVED_ACTION" />
-                <category android:name="com.demo.gcmCient.app"/>
+                <category android:name="com.demo.gcmClient"/>
             </intent-filter>
         </receiver>
 
-        <meta-data
-            android:name="com.google.android.gms.version"
-            android:value="@integer/google_play_services_version" />
+
 
         <activity
             android:name=".RegistrationActivity"

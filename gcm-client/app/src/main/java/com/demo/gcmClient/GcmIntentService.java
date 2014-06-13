@@ -1,11 +1,11 @@
-package com.demo.gcmClient.services;
+package com.demo.gcmClient;
 
 import android.app.IntentService;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.demo.gcmClient.receivers.GcmBroadcastReceiver;
+import com.demo.gcmClient.GcmBroadcastReceiver;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 /**
