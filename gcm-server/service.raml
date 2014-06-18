@@ -1,4 +1,4 @@
-#%RAML 0.8
+RAML 0.8
 ---
 title: GCM Demo API
 baseUri: http::/gcmdemo.cargocultism.com/api
@@ -42,7 +42,20 @@ schemas:
             }
          }
       }
-
+   - message: |
+      {
+        "type":"object",
+        "$schema":"http://json-schema.org/draft-03/schema",
+        "id":"http://jsonschema.net",
+        "required":true,
+        "properties": {
+          "content":{
+          "type":"string",
+          "required":true
+          }
+        }
+      }
+      
 /sessions:
    /{sessionId}:
       post:
@@ -96,6 +109,9 @@ schemas:
    /{sessionId}/message:
       post:
         description: Post a new message
+        body:
+          application/json:
+            schema: message
         responses:
             200:
             400:
